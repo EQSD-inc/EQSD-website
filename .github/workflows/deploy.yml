@@ -1,0 +1,56 @@
+# 公開の自動処理（GitHub Actions）
+# main ブランチにファイルがアップロードされるたびに、次の順で自動実行される：
+#   1. リポジトリの中身を取り出す
+#   2. tools/add_head_tags.py で、index.html にアイコンの指定を書き足す
+#   3. 公開するファイルだけを _site フォルダに集める
+#   4. GitHub Pages に公開する
+# ※ リポジトリの index.html 自体は書き換えない（公開用のコピーだけを加工する）
+
+name: Deploy site
+
+on:
+  push:
+    branches: [main]      # main にアップロードされたら実行
+  workflow_dispatch:      # 「Actions」画面から手動でも実行できるようにする
+
+permissions:
+  contents: read          # リポジトリの読み取り
+  pages: write            # GitHub Pages への公開
+  id-token: write         # 公開時の本人確認に必要
+
+concurrency:
+  group: pages            # 連続でアップロードしたときは、最後の1回だけ公開する
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: リポジトリの中身を取り出す
+        uses: actions/checkout@v4
+
+      - name: Pythonを用意する
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: アイコンの指定を書き足す
+        run: python tools/add_head_tags.py index.html
+
+      - name: 公開するファイルを集める
+        run: |
+          mkdir _site
+          cp index.html favicon.ico favicon-16x16.png favicon-32x32.png apple-touch-icon.png _site/
+          if [ -f CNAME ]; then cp CNAME _site/; fi
+
+      - name: 公開用にまとめる
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: GitHub Pages に公開する
+        id: deployment
+        uses: actions/deploy-pages@v4
