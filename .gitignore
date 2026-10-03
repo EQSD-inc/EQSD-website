@@ -1,0 +1,22 @@
+# Windows・Mac が自動で作るファイル
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Python の一時ファイル
+__pycache__/
+*.pyc
+
+# 作業用のファイル・フォルダ（公開しない）
+*.bak
+*.tmp
+_site/
+work/
+private/
+
+# 許可のメールや社内資料などを誤って入れないため
+*.eml
+*.msg
+*.docx
+*.xlsx
+*.pdf
