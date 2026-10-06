@@ -1,9 +1,10 @@
 # 公開の自動処理（GitHub Actions）
 # main ブランチにファイルがアップロードされるたびに、次の順で自動実行される：
 #   1. リポジトリの中身を取り出す
-#   2. tools/add_head_tags.py で、index.html にアイコンの指定を書き足す
-#   3. 公開するファイルだけを _site フォルダに集める
-#   4. GitHub Pages に公開する
+#   2. tools/slim_fonts.py で、埋め込みフォントを取り除き Google Fonts に切り替える
+#   3. tools/add_head_tags.py で、index.html にアイコンの指定を書き足す
+#   4. 公開するファイルだけを _site フォルダに集める
+#   5. GitHub Pages に公開する
 # ※ リポジトリの index.html 自体は書き換えない（公開用のコピーだけを加工する）
 
 name: Deploy site
@@ -36,6 +37,9 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
+      - name: 埋め込みフォントを取り除き、Google Fonts に切り替える（表示の高速化）
+        run: python tools/slim_fonts.py index.html
 
       - name: アイコンの指定を書き足す
         run: python tools/add_head_tags.py index.html
